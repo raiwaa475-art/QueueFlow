@@ -113,7 +113,7 @@ export default function AdminDashboard() {
   const handleUpdateStatus = async (bookingId: string, status: string) => {
     if (!session) return;
     try {
-      await fetch(`http://localhost:3005/bookings/${bookingId}/status`, {
+      await fetch(`${API_URL}/bookings/${bookingId}/status`, {
         method: "PATCH",
         headers: { 
           "Content-Type": "application/json",
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
   const handleCallNext = async (serviceId: string) => {
     if (!session) return;
     try {
-      await fetch("http://localhost:3005/bookings/next", {
+      await fetch(`${API_URL}/bookings/next`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
   const handleToggleAdmin = async (targetUserId: string, isAdmin: boolean) => {
     if (!session) return;
     try {
-      await fetch(`http://localhost:3005/auth/users/${targetUserId}/role`, {
+      await fetch(`${API_URL}/auth/users/${targetUserId}/role`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -203,8 +203,8 @@ export default function AdminDashboard() {
     if (!session) return;
     try {
       const url = editingService 
-        ? `http://localhost:3005/services/${editingService.id}`
-        : "http://localhost:3005/services";
+        ? `${API_URL}/services/${editingService.id}`
+        : `${API_URL}/services`;
       
       await fetch(url, {
         method: editingService ? "PATCH" : "POST",
