@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Service {
+  id           String   @id @default(uuid())
+  name         String
+  description  String?
+  maxCapacity  Int      @default(50) @map("max_capacity")
+  createdAt    DateTime @default(now()) @map("created_at")
+  queues       Queue[]
+
+  @@map("services")
+}
+
+model Queue {
+  id            String    @id @default(uuid())
+  serviceId     String    @map("service_id")
+  date          DateTime  @default(now()) @db.Date
+  currentNumber Int       @default(0) @map("current_number")
+  status        String    @default("open")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  service       Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  bookings      Booking[]
+
+  @@map("queues")
+}
+
+model Booking {
+  id            String   @id @default(uuid())
+  queueId       String   @map("queue_id")
+  userId        String   @map("user_id")
+  bookingNumber Int      @map("booking_number")
+  status        String   @default("waiting")
+  createdAt     DateTime @default(now()) @map("created_at")
+  queue         Queue    @relation(fields: [queueId], references: [id], onDelete: Cascade)
+
+  @@map("bookings")
+}
+
+model Config {
+  id                Int      @id @default(1)
+  resetTime         String   @default("00:00") @map("reset_time")
+  prefixMode        Boolean  @default(true) @map("prefix_mode")
+  maxCapacity       Int      @default(100) @map("max_capacity")
+  notifyThreshold   Int      @default(3) @map("notify_threshold")
+  soundEnabled      Boolean  @default(true) @map("sound_enabled")
+  updatedAt         DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("system_configs")
+}

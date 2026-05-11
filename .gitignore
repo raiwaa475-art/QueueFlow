@@ -1,0 +1,27 @@
+# Root Gitignore for QueueFlow
+
+# Node modules
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Environment files
+.env
+.env.local
+.env.production
+frontend/.env.local
+backend/.env
+
+# Next.js build
+frontend/.next/
+frontend/out/
+
+# NestJS build
+backend/dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Database (local)
+database/
