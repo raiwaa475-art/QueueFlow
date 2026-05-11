@@ -25,3 +25,7 @@ Thumbs.db
 
 # Database (local)
 database/
+
+# Agent related
+.agents/
+skills-lock.json
