@@ -1,36 +1,70 @@
-# QueueFlow - Premium SME Queue Management System
+# QueueFlow - ระบบจัดการคิวอัจฉริยะระดับพรีเมียมสำหรับ SME
 
-QueueFlow is a professional, real-time queue management system designed for modern businesses. It provides a seamless experience for both customers and administrators with sub-second latency and a premium, responsive UI.
+QueueFlow เป็นระบบจัดการคิวแบบ Real-time ที่ออกแบบมาเพื่อธุรกิจยุคใหม่ ช่วยให้การจัดการลูกค้าเป็นเรื่องง่าย รวดเร็ว และมอบประสบการณ์ที่ดีเยี่ยมให้กับทั้งลูกค้าและผู้ดูแลระบบ ด้วยความล่าช้า (Latency) ระดับเสี้ยววินาทีและดีไซน์ที่สวยงาม
 
-## 🚀 Features
+## 🚀 คุณสมบัติเด่น (Features)
 
-- **Real-time Updates:** Sub-second queue status updates powered by Supabase Realtime.
-- **Multi-language Support:** Full Thai and English localization.
-- **Admin Dashboard:** Comprehensive control for calling next queues, managing services, and viewing reports.
-- **Premium Design:** Stunning, responsive interface built with Tailwind CSS and Framer Motion.
-- **Enterprise Security:** Hardened Row Level Security (RLS) policies and secure authentication.
+*   **อัปเดตแบบ Real-time:** ทราบสถานะคิวได้ทันทีโดยไม่ต้องรีเฟรชหน้าจอ ด้วยเทคโนโลยี Supabase Realtime
+*   **รองรับหลายภาษา:** ใช้งานได้ทั้งภาษาไทยและภาษาอังกฤษอย่างสมบูรณ์ (Full Localization)
+*   **แดชบอร์ดอัจฉริยะ:** หน้าจอสำหรับผู้ดูแลระบบที่จัดการง่าย เรียกคิวได้รวดเร็ว และมีสถิติที่ชัดเจน
+*   **ดีไซน์ระดับพรีเมียม:** อินเตอร์เฟซสวยงาม ใช้งานลื่นไหล ตอบสนองทุกอุปกรณ์ (Framer Motion + Tailwind CSS)
+*   **ความปลอดภัยสูง:** ปกป้องข้อมูลด้วย Row Level Security (RLS) และระบบ Authentication ที่รัดกุม
 
-## 📁 Project Structure
+---
+
+## 🔄 ขั้นตอนการทำงาน (Workflow)
+
+### 👤 สำหรับผู้ใช้งาน (User Workflow)
+1.  **การเข้าถึง (Access):** ลูกค้าสแกน QR Code ที่หน้าร้านหรือเข้าผ่าน URL เพื่อเข้าสู่หน้าจองคิว
+2.  **เลือกบริการ (Select Service):** เลือกประเภทบริการที่ต้องการ (เช่น ปรึกษาทั่วไป, รับสินค้า, หรือบริการเฉพาะทาง)
+3.  **รับคิว (Get Ticket):** ระบบจะออกเลขคิว พร้อมแสดงจำนวนคิวที่รอก่อนหน้าและเวลาที่คาดว่าจะรอ
+4.  **ติดตามสถานะ (Live Tracking):** ลูกค้าสามารถดูสถานะคิวปัจจุบันที่กำลังถูกเรียกได้แบบ Real-time ผ่านมือถือของตนเอง
+5.  **รับบริการ (Service):** เมื่อถึงคิว หน้าจอจะแจ้งเตือนให้ลูกค้าติดต่อเคาน์เตอร์เพื่อรับบริการ
+
+```mermaid
+graph LR
+    A[สแกน QR / URL] --> B[เลือกบริการ]
+    B --> C[รับเลขคิว]
+    C --> D[รอเรียก / ดูสถานะ Real-time]
+    D --> E[เข้ารับบริการ]
+    style C fill:#f96,stroke:#333,stroke-width:2px
+    style E fill:#00c853,stroke:#333,stroke-width:2px,color:#fff
+```
+
+### ⚙️ สำหรับผู้ดูแลระบบ (Admin Workflow)
+1.  **การเข้าใช้งาน (Login):** แอดมินเข้าสู่ระบบผ่านหน้า Admin Dashboard เพื่อความปลอดภัย
+2.  **จัดการสถานะร้าน (Management):** สามารถเปิด/ปิด การรับคิวของแต่ละแผนกหรือบริการได้ตามความหนาแน่นของลูกค้า
+3.  **เรียกคิว (Call Queue):** เมื่อเจ้าหน้าที่พร้อม แอดมินกดปุ่ม **"เรียกคิวถัดไป" (Call Next)** เพื่อเรียกคิวจากรายการที่รออยู่
+4.  **จัดการลูกค้า (Queue Control):** สามารถข้ามคิว (Skip), เรียกซ้ำ (Recall) หรือกดยืนยันการให้บริการเสร็จสิ้น (Complete)
+5.  **ตรวจสอบสถิติ (Analytics):** ดูรายงานจำนวนคิวรวมในแต่ละวัน และประสิทธิภาพในการให้บริการ
+
+```mermaid
+graph LR
+    F[Login Dashboard] --> G[จัดการเปิด/ปิดบริการ]
+    G --> H[กดเรียกคิว Call Next]
+    H --> I[ให้บริการ / ข้ามคิว]
+    I --> J[เสร็จสิ้น / บันทึกสถิติ]
+    style H fill:#2196f3,stroke:#333,stroke-width:2px,color:#fff
+    style J fill:#4caf50,stroke:#333,stroke-width:2px,color:#fff
+```
+
+---
+
+## 🛠️ เทคโนโลยีที่ใช้ (Tech Stack)
+
+*   **Frontend:** [Next.js 15](https://nextjs.org/) (React, Tailwind CSS, Framer Motion)
+*   **Backend:** [NestJS](https://nestjs.com/) (Node.js, Prisma ORM)
+*   **Database & Realtime:** [Supabase](https://supabase.com/) (PostgreSQL, Auth, Realtime)
+*   **Infrastructure:** Vercel (Frontend) & Render (Backend)
+
+## 📁 โครงสร้างโปรเจกต์ (Project Structure)
 
 ```text
 QueueFlow/
-├── frontend/    # Next.js Application (React, Tailwind, Framer Motion)
-├── backend/     # NestJS API (Node.js, Prisma, PostgreSQL)
-└── database/    # SQL Schemas and Migrations
+├── frontend/    # แอปพลิเคชัน Next.js (หน้าบ้านและแดชบอร์ด)
+├── backend/     # ระบบ API และ Business Logic ด้วย NestJS
+└── database/    # โครงสร้างฐานข้อมูล SQL และนโยบายความปลอดภัย (RLS)
 ```
 
-## 🛠️ Tech Stack
-
-- **Frontend:** Next.js 15+, React, Tailwind CSS, Framer Motion, Lucide Icons.
-- **Backend:** NestJS, Prisma ORM, Passport.js.
-- **Database & Auth:** Supabase (PostgreSQL, Realtime, Auth).
-
-## 🌍 Deployment
-
-- **Frontend:** Deployed on **Vercel**.
-- **Backend:** Deployed on **Render**.
-- **Database:** Hosted on **Supabase Cloud**.
-
-## 📄 License
-
-This project is proprietary and for internal business use only.
+---
+© 2024 QueueFlow - ระบบจัดการคิวเพื่อธุรกิจ SME ทั่วไทย
