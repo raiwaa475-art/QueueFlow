@@ -4,11 +4,17 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { SupabaseService } from '../../supabase/supabase.service';
 
 @Injectable()
 export class SupabaseGuard implements CanActivate {
-  constructor(private supabaseService: SupabaseService) {}
+  constructor(
+    private jwtService: JwtService,
+    private configService: ConfigService,
+    private supabaseService: SupabaseService,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -24,14 +30,33 @@ export class SupabaseGuard implements CanActivate {
       throw new UnauthorizedException('Invalid authorization format');
     }
 
-    const user = await this.supabaseService.verifyToken(token);
+    try {
+      const secret = this.configService.get<string>('SUPABASE_JWT_SECRET');
+      if (!secret) {
+        throw new Error('Missing SUPABASE_JWT_SECRET');
+      }
 
-    if (!user) {
-      throw new UnauthorizedException('Invalid or expired token');
+      const payload = await this.jwtService.verifyAsync(token, { secret });
+
+      // Attach user matching Supabase auth.getUser() structure
+      request.user = {
+        id: payload.sub,
+        email: payload.email,
+        app_metadata: payload.app_metadata || {},
+        user_metadata: payload.user_metadata || {},
+        role: payload.role,
+      };
+      return true;
+    } catch (err) {
+      // Fallback to Supabase verifyToken if local verification fails
+      const user = await this.supabaseService.verifyToken(token);
+
+      if (!user) {
+        throw new UnauthorizedException('Invalid or expired token');
+      }
+
+      request.user = user;
+      return true;
     }
-
-    // Attach user to request
-    request.user = user;
-    return true;
   }
 }

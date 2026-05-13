@@ -3,7 +3,7 @@
 import React, { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock, Users, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Clock, Users, ShieldCheck, CheckCircle2, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -19,7 +19,8 @@ function NewBookingContent() {
   
   const [service, setService] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(true);
-  const [bookingStatus, setBookingStatus] = React.useState<'idle' | 'loading' | 'success'>('idle');
+  const [bookingStatus, setBookingStatus] = React.useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (!serviceId) return;
@@ -47,6 +48,7 @@ function NewBookingContent() {
     }
 
     setBookingStatus('loading');
+    setErrorMessage(null);
     
     try {
       // Call NestJS API to join queue with Token
@@ -68,12 +70,13 @@ function NewBookingContent() {
         }, 2000);
       } else {
         const errData = await res.json();
-        alert(errData.message || "Booking failed");
-        setBookingStatus('idle');
+        setErrorMessage(errData.message || "Queue is currently unavailable or has reached full capacity.");
+        setBookingStatus('error');
       }
     } catch (err) {
       console.error("Booking failed:", err);
-      setBookingStatus('idle');
+      setErrorMessage("Network error occurred. Please try again.");
+      setBookingStatus('error');
     }
   };
 
@@ -168,6 +171,49 @@ function NewBookingContent() {
               className="h-full bg-green-500"
             />
           </div>
+        </motion.div>
+      )}
+
+      {/* Premium Error Handling UI Overlay for Full Capacity / Closed Queue */}
+      {bookingStatus === 'error' && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center"
+        >
+          <motion.div 
+            initial={{ scale: 0.8, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            className="max-w-md w-full bg-white rounded-[40px] p-10 shadow-2xl border border-black/5 flex flex-col items-center relative overflow-hidden"
+          >
+            {/* Soft decorative header glow */}
+            <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-red-500 to-amber-500" />
+            
+            <div className="w-24 h-24 bg-red-50 text-red-500 rounded-[32px] flex items-center justify-center mb-6 shadow-inner border border-red-100">
+              <AlertTriangle className="w-12 h-12" />
+            </div>
+            
+            <h2 className="text-3xl font-black mb-3 text-slate-900">Queue Unavailable</h2>
+            <p className="text-muted-foreground text-base max-w-sm mb-8 leading-relaxed font-medium">
+              {errorMessage}
+            </p>
+            
+            <div className="w-full flex flex-col gap-3">
+              <button
+                onClick={() => setBookingStatus('idle')}
+                className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black tracking-wide shadow-lg shadow-slate-900/20 active:scale-95 transition-all"
+              >
+                Try Again
+              </button>
+              <Link
+                href="/services"
+                className="w-full py-4 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-2xl font-bold active:scale-95 transition-all"
+              >
+                Back to Services
+              </Link>
+            </div>
+          </motion.div>
         </motion.div>
       )}
     </div>

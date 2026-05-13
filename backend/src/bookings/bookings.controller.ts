@@ -27,12 +27,16 @@ export class BookingsController {
   @UseGuards(SupabaseGuard, AdminGuard)
   async getAllBookings() {
     const bookings = await this.bookingsService.getAllBookings();
-    const users: any[] = await this.authService.listUsers();
     
-    // Map user data to bookings
+    // Map user data to match expected frontend structure
     return bookings.map(b => ({
       ...b,
-      user: users.find(u => u.id === b.userId) || { id: b.userId, email: 'unknown@user.com', user_metadata: { full_name: 'Unknown User' } }
+      user: (b as any).user ? {
+        id: (b as any).user.id,
+        email: (b as any).user.email,
+        fullName: (b as any).user.fullName,
+        user_metadata: { full_name: (b as any).user.fullName || (b as any).user.email }
+      } : { id: b.userId, email: 'unknown@user.com', user_metadata: { full_name: 'Unknown User' } }
     }));
   }
 

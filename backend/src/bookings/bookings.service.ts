@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -23,17 +23,15 @@ export class BookingsService {
       throw new NotFoundException('Service not found');
     }
 
-    // 1. Get or Create today's queue for this service
+    // 1. Get or Create today's queue for this service using the unique constraint
     const today = this.getThaiToday();
 
     const queue = await this.prisma.queue.upsert({
       where: {
-        // Since there's no unique constraint on serviceId + date in schema.prisma snippet,
-        // we'll find first and create if not exists. 
-        // Note: In production, you should add a unique constraint @unique([serviceId, date])
-        id: (await this.prisma.queue.findFirst({
-          where: { serviceId, date: today }
-        }))?.id || 'non-existent-id'
+        serviceId_date: {
+          serviceId,
+          date: today,
+        },
       },
       update: {},
       create: {
@@ -43,8 +41,24 @@ export class BookingsService {
       },
     });
 
-    // 2. Transaction to increment booking number
+    if (queue.status === 'closed') {
+      throw new BadRequestException('Service is temporarily closed');
+    }
+
+    // 2. Transaction with SELECT ... FOR UPDATE to avoid race conditions
     return this.prisma.$transaction(async (tx) => {
+      // Lock the queue row at the database level for the current transaction
+      await tx.$queryRaw`SELECT * FROM queues WHERE id = ${queue.id}::uuid FOR UPDATE`;
+
+      // Check current total bookings to enforce maxCapacity
+      const currentBookingsCount = await tx.booking.count({
+        where: { queueId: queue.id, status: { not: 'cancelled' } },
+      });
+
+      if (currentBookingsCount >= service.maxCapacity) {
+        throw new BadRequestException('Queue has reached maximum capacity');
+      }
+
       // Get the current max booking number for this queue
       const lastBooking = await tx.booking.findFirst({
         where: { queueId: queue.id },
@@ -126,6 +140,7 @@ export class BookingsService {
         queue: {
           include: { service: true },
         },
+        user: true,
       },
       orderBy: { bookingNumber: 'asc' },
     });

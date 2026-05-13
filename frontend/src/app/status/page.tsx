@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { API_URL } from "@/lib/constants";
+import { supabase } from "@/lib/supabase";
 
 export default function StatusPage() {
   const { t } = useLanguage();
@@ -37,8 +38,22 @@ export default function StatusPage() {
 
   React.useEffect(() => {
     fetchMyBookings();
-    const interval = setInterval(fetchMyBookings, 5000);
-    return () => clearInterval(interval);
+
+    if (!session) return;
+
+    const channel = supabase
+      .channel('public:bookings')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+        fetchMyBookings();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'queues' }, () => {
+        fetchMyBookings();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [session]);
 
   if (loading) return (

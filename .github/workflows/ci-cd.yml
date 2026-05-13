@@ -1,0 +1,143 @@
+name: QueueFlow CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, staging ]
+  pull_request:
+    branches: [ main, staging ]
+  workflow_dispatch:
+
+jobs:
+  # ==========================================
+  # 1. Continuous Integration (Tests & Builds)
+  # ==========================================
+  ci-pipeline:
+    name: Continuous Integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      # Backend Checks
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Run Backend Linter
+        working-directory: ./backend
+        run: npm run lint
+
+      - name: Run Backend Unit & Integration Tests
+        working-directory: ./backend
+        run: npm run test
+
+      - name: Run Backend E2E Tests
+        working-directory: ./backend
+        run: npm run test:e2e
+
+      - name: Build Backend Service
+        working-directory: ./backend
+        run: npm run build
+
+      # Frontend Checks
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build Frontend Application
+        working-directory: ./frontend
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: "https://mock.supabase.co"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: "mock-key"
+
+  # ==========================================
+  # 2. Deploy to Staging Environment
+  # ==========================================
+  deploy-staging:
+    name: Deploy to Staging
+    needs: ci-pipeline
+    if: github.ref == 'refs/heads/staging' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://staging.queueflow.app
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Deploy Backend to Render Staging
+      - name: Trigger Render Staging Deployment
+        uses: render-oss/deploy-action@v0.0.1
+        with:
+          service-id: ${{ secrets.RENDER_STAGING_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
+
+      # Deploy Frontend to Vercel Preview/Staging
+      - name: Setup Vercel CLI
+        run: npm install --global vercel@latest
+      
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+        
+      - name: Build Project Artifacts
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        
+      - name: Deploy Project Artifacts to Vercel Preview
+        run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+
+  # ==========================================
+  # 3. Deploy to Production Environment
+  # ==========================================
+  deploy-production:
+    name: Deploy to Production
+    needs: ci-pipeline
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: https://queueflow.app
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Database Migrations (Run before deploying API)
+      - name: Apply Supabase Database Migrations
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Run DB Migrations
+        run: supabase db push
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: ${{ secrets.SUPABASE_PROJECT_ID }}
+
+      # Deploy Backend to Render Production
+      - name: Trigger Render Production Deployment
+        uses: render-oss/deploy-action@v0.0.1
+        with:
+          service-id: ${{ secrets.RENDER_PRODUCTION_SERVICE_ID }}
+          api-key: ${{ secrets.RENDER_API_KEY }}
+
+      # Deploy Frontend to Vercel Production
+      - name: Setup Vercel CLI
+        run: npm install --global vercel@latest
+      
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        
+      - name: Deploy Project Artifacts to Vercel Production
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

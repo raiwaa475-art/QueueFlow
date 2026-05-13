@@ -4,17 +4,18 @@ QueueFlow เป็นระบบจัดการคิวแบบ Real-time
 
 ## 🚀 คุณสมบัติเด่น (Features)
 
-*   **อัปเดตแบบ Real-time:** ทราบสถานะคิวได้ทันทีโดยไม่ต้องรีเฟรชหน้าจอ ด้วยเทคโนโลยี Supabase Realtime
-*   **รองรับหลายภาษา:** ใช้งานได้ทั้งภาษาไทยและภาษาอังกฤษอย่างสมบูรณ์ (Full Localization)
-*   **แดชบอร์ดอัจฉริยะ:** หน้าจอสำหรับผู้ดูแลระบบที่จัดการง่าย เรียกคิวได้รวดเร็ว และมีสถิติที่ชัดเจน
-*   **ดีไซน์ระดับพรีเมียม:** อินเตอร์เฟซสวยงาม ใช้งานลื่นไหล ตอบสนองทุกอุปกรณ์ (Framer Motion + Tailwind CSS)
-*   **ความปลอดภัยสูง:** ปกป้องข้อมูลด้วย Row Level Security (RLS) และระบบ Authentication ที่รัดกุม
+- **อัปเดตแบบ Real-time:** ทราบสถานะคิวได้ทันทีโดยไม่ต้องรีเฟรชหน้าจอ ด้วยเทคโนโลยี Supabase Realtime
+- **รองรับหลายภาษา:** ใช้งานได้ทั้งภาษาไทยและภาษาอังกฤษอย่างสมบูรณ์ (Full Localization)
+- **แดชบอร์ดอัจฉริยะ:** หน้าจอสำหรับผู้ดูแลระบบที่จัดการง่าย เรียกคิวได้รวดเร็ว และมีสถิติที่ชัดเจน
+- **ดีไซน์ระดับพรีเมียม:** อินเตอร์เฟซสวยงาม ใช้งานลื่นไหล ตอบสนองทุกอุปกรณ์ (Framer Motion + Tailwind CSS)
+- **ความปลอดภัยสูง:** ปกป้องข้อมูลด้วย Row Level Security (RLS) และระบบ Authentication ที่รัดกุม
 
 ---
 
 ## 🔄 ขั้นตอนการทำงาน (Workflow)
 
 ### 👤 สำหรับผู้ใช้งาน (User Workflow)
+
 1.  **การเข้าถึง (Access):** ลูกค้าสแกน QR Code ที่หน้าร้านหรือเข้าผ่าน URL เพื่อเข้าสู่หน้าจองคิว
 2.  **เลือกบริการ (Select Service):** เลือกประเภทบริการที่ต้องการ (เช่น ปรึกษาทั่วไป, รับสินค้า, หรือบริการเฉพาะทาง)
 3.  **รับคิว (Get Ticket):** ระบบจะออกเลขคิว พร้อมแสดงจำนวนคิวที่รอก่อนหน้าและเวลาที่คาดว่าจะรอ
@@ -32,6 +33,7 @@ graph LR
 ```
 
 ### ⚙️ สำหรับผู้ดูแลระบบ (Admin Workflow)
+
 1.  **การเข้าใช้งาน (Login):** แอดมินเข้าสู่ระบบผ่านหน้า Admin Dashboard เพื่อความปลอดภัย
 2.  **จัดการสถานะร้าน (Management):** สามารถเปิด/ปิด การรับคิวของแต่ละแผนกหรือบริการได้ตามความหนาแน่นของลูกค้า
 3.  **เรียกคิว (Call Queue):** เมื่อเจ้าหน้าที่พร้อม แอดมินกดปุ่ม **"เรียกคิวถัดไป" (Call Next)** เพื่อเรียกคิวจากรายการที่รออยู่
@@ -52,10 +54,10 @@ graph LR
 
 ## 🛠️ เทคโนโลยีที่ใช้ (Tech Stack)
 
-*   **Frontend:** [Next.js 15](https://nextjs.org/) (React, Tailwind CSS, Framer Motion)
-*   **Backend:** [NestJS](https://nestjs.com/) (Node.js, Prisma ORM)
-*   **Database & Realtime:** [Supabase](https://supabase.com/) (PostgreSQL, Auth, Realtime)
-*   **Infrastructure:** Vercel (Frontend) & Render (Backend)
+- **Frontend:** [Next.js 15](https://nextjs.org/) (React, Tailwind CSS, Framer Motion)
+- **Backend:** [NestJS](https://nestjs.com/) (Node.js, Prisma ORM)
+- **Database & Realtime:** [Supabase](https://supabase.com/) (PostgreSQL, Auth, Realtime)
+- **Infrastructure:** Vercel (Frontend) & Render (Backend)
 
 ## 📁 โครงสร้างโปรเจกต์ (Project Structure)
 
@@ -68,3 +70,4 @@ QueueFlow/
 
 ---
 © QueueFlow - ระบบจัดการคิวเพื่อธุรกิจ SME ทั่วไทย
+

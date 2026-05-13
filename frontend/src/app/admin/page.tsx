@@ -38,6 +38,7 @@ import {
 } from 'recharts';
 import { motion } from "framer-motion";
 import { API_URL } from "@/lib/constants";
+import { supabase } from "@/lib/supabase";
 
 export default function AdminDashboard() {
   const { user, session, loading: authLoading } = useAuth();
@@ -106,8 +107,25 @@ export default function AdminDashboard() {
     }
 
     fetchData();
-    const interval = setInterval(fetchData, 5000);
-    return () => clearInterval(interval);
+
+    if (!session) return;
+
+    const channel = supabase
+      .channel('public:admin_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'bookings' }, () => {
+        fetchData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'queues' }, () => {
+        fetchData();
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'services' }, () => {
+        fetchData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [session, user, authLoading]);
 
   const handleUpdateStatus = async (bookingId: string, status: string) => {
@@ -155,6 +173,8 @@ export default function AdminDashboard() {
         },
         body: JSON.stringify({ isAdmin })
       });
+      // Task 10: Refresh session immediately to update stale JWT claims
+      await supabase.auth.refreshSession();
       fetchData();
     } catch (err) {
       console.error("Failed to toggle admin:", err);
